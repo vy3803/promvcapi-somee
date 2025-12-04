@@ -1,4 +1,4 @@
-name: Deploy to FTP
+name: Deploy via FTP
 
 on:
   push:
@@ -6,12 +6,12 @@ on:
       - main
 
 jobs:
-  deploy:
+  ftp-deploy:
+    name: FTP Deploy
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout source
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@4.3.3
@@ -19,5 +19,13 @@ jobs:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
+
+          # Folder local phải kết thúc bằng dấu /
           local-dir: ./dist/
+
+          # Folder trên server (bạn có thể đổi)
           server-dir: /public_html/
+
+          # Tuỳ chọn
+          protocol: ftp
+          port: 21
