@@ -1,4 +1,4 @@
-name: Deploy ASP.NET MVC to Somee
+name: Deploy to Somee Hosting
 
 on:
   push:
@@ -6,27 +6,33 @@ on:
       - main
 
 jobs:
-  build:
-    runs-on: windows-latest
+  ftp-deploy:
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout source
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Setup .NET
+      # Build .NET project
+      - name: Setup .NET Core
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '8.0.x'
 
-      - name: Publish project
-        run: dotnet publish ./proMvcApi.csproj -c Release -o ./publish_output
+      - name: Publish .NET App
+        run: dotnet publish -c Release -o ./publish_output
 
-      - name: FTP Deploy
+      # Deploy via FTP
+      - name: Upload to Somee FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftp
-          local-dir: ./publish_output/
-          server-dir: /www.MINHVY.somee.com/
+          local-dir: ./publish_output
+          server-dir: /
+          exclude: |
+            **/.git*
+            **/.github*
+            **/*Development*
