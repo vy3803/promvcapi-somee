@@ -1,47 +1,24 @@
-import ftp from "basic-ftp";
-import fs from "fs";
-import dotenv from "dotenv";
-dotenv.config();
+name: 🚀 Deploy via FTP
 
-async function uploadFTP() {
-    const client = new ftp.Client();
-    client.ftp.verbose = true;
+on:
+  push:
+    branches:
+      - main
 
-    try {
-        // Kết nối FTP
-        await client.access({
-            host: process.env.FTP_HOST,
-            user: process.env.FTP_USER,
-            password: process.env.FTP_PASSWORD,
-            secure: false
-        });
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
 
-        console.log("Đã kết nối FTP!");
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-        // Tạo thư mục nếu chưa tồn tại
-        const remoteFolder = "/public_html/uploads";
-        await client.ensureDir(remoteFolder);
-        console.log("Đã tạo/kiểm tra thư mục:", remoteFolder);
-
-        // File muốn upload
-        const localFile = "test.txt";
-        const remoteFile = "test.txt";
-
-        // Kiểm tra file local có tồn tại không
-        if (!fs.existsSync(localFile)) {
-            console.log("❌ Không tìm thấy file local:", localFile);
-            return;
-        }
-
-        // Upload file
-        await client.uploadFrom(localFile, `${remoteFolder}/${remoteFile}`);
-        console.log("✅ Upload thành công:", remoteFile);
-
-    } catch (err) {
-        console.error("❌ Lỗi FTP:", err);
-    }
-
-    client.close();
-}
-
-uploadFTP();
+      - name: Upload via FTP
+        uses: SamKirkland/FTP-Deploy-Action@4.3.3
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftp
+          local-dir: ./
+          server-dir: /public_html/
