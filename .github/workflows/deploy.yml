@@ -1,4 +1,4 @@
-name: 🚀 Deploy via FTP
+name: Deploy to FTP
 
 on:
   push:
@@ -10,15 +10,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout source
         uses: actions/checkout@v3
 
-      - name: Upload via FTP
+      - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@4.3.3
         with:
           server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USER }}
+          username: ${{ secrets.FPT_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftp
-          local-dir: ./
-          server-dir: /public_html/
+          local-dir: ./dist
+          server-dir: /
