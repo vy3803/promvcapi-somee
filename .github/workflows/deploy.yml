@@ -1,38 +1,47 @@
-name: Deploy to Somee Hosting
+import ftp from "basic-ftp";
+import fs from "fs";
+import dotenv from "dotenv";
+dotenv.config();
 
-on:
-  push:
-    branches:
-      - main
+async function uploadFTP() {
+    const client = new ftp.Client();
+    client.ftp.verbose = true;
 
-jobs:
-  ftp-deploy:
-    runs-on: ubuntu-latest
+    try {
+        // Kết nối FTP
+        await client.access({
+            host: process.env.FTP_HOST,
+            user: process.env.FTP_USER,
+            password: process.env.FTP_PASSWORD,
+            secure: false
+        });
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+        console.log("Đã kết nối FTP!");
 
-      # Build .NET project
-      - name: Setup .NET Core
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: '8.0.x'
+        // Tạo thư mục nếu chưa tồn tại
+        const remoteFolder = "/public_html/uploads";
+        await client.ensureDir(remoteFolder);
+        console.log("Đã tạo/kiểm tra thư mục:", remoteFolder);
 
-      - name: Publish .NET App
-        run: dotnet publish -c Release -o ./publish_output
+        // File muốn upload
+        const localFile = "test.txt";
+        const remoteFile = "test.txt";
 
-      # Deploy via FTP
-      - name: Upload to Somee FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp
-          local-dir: ./publish_output
-          server-dir: /
-          exclude: |
-            **/.git*
-            **/.github*
-            **/*Development*
+        // Kiểm tra file local có tồn tại không
+        if (!fs.existsSync(localFile)) {
+            console.log("❌ Không tìm thấy file local:", localFile);
+            return;
+        }
+
+        // Upload file
+        await client.uploadFrom(localFile, `${remoteFolder}/${remoteFile}`);
+        console.log("✅ Upload thành công:", remoteFile);
+
+    } catch (err) {
+        console.error("❌ Lỗi FTP:", err);
+    }
+
+    client.close();
+}
+
+uploadFTP();
