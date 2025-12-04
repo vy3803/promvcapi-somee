@@ -1,4 +1,4 @@
-name: Deploy website via FTP
+name: Deploy via FTP
 
 on:
   push:
@@ -7,9 +7,7 @@ on:
 
 jobs:
   ftp-deploy:
-    name: Deploy via FTP
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout source
         uses: actions/checkout@v3
@@ -20,7 +18,4 @@ jobs:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp
-          port: 21
-          local-dir: ./dist/
-          server-dir: /
+          local-dir: ./
